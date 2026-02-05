@@ -1,9 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR;
 
 public class ExternalViewScript : MonoBehaviour
 {
     public Transform externalViewPoint;
+    public Transform cameraOffset;
+    
+    public InputActionReference primaryButtonAction;
 
     private Vector3 roomPosition;
     private Quaternion roomRotation;
@@ -13,16 +17,20 @@ public class ExternalViewScript : MonoBehaviour
     {
         roomPosition = transform.position;
         roomRotation = transform.rotation;
+
+        primaryButtonAction.action.Enable();
+        primaryButtonAction.action.performed += ctx => ToggleView();
     }
 
     void Update()
     {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (Keyboard.current.digit8Key.wasPressedThisFrame)
         {
             ToggleView();
         }
 
-        if (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)
+        UnityEngine.XR.InputDevice rightHand = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+        if (rightHand.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primaryButton, out bool primaryPressed) && primaryPressed)
         {
             ToggleView();
         }
@@ -30,16 +38,20 @@ public class ExternalViewScript : MonoBehaviour
 
     void ToggleView()
     {
+        // if (isInRoom)
+        // {
+        //     transform.position = externalViewPoint.position;
+        //     transform.rotation = externalViewPoint.rotation;
+        // }
+        // else
+        // {
+        //     transform.position = roomPosition;
+        //     transform.rotation = roomRotation;
+        // }
         if (isInRoom)
-        {
-            transform.position = externalViewPoint.position;
-            transform.rotation = externalViewPoint.rotation;
-        }
+            cameraOffset.position = externalViewPoint.position;
         else
-        {
-            transform.position = roomPosition;
-            transform.rotation = roomRotation;
-        }
+            cameraOffset.position = roomPosition;
 
         isInRoom = !isInRoom;
     }
